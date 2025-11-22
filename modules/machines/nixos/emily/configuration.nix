@@ -99,8 +99,11 @@ in
   imports = [
     ../../../misc/tailscale
     ../../../misc/zfs-root
+    ../../../misc/claude-cli
     ./homelab
   ];
+
+  modules.claude-cli.enable = true;
 
   virtualisation.docker.storageDriver = "overlay2";
 
