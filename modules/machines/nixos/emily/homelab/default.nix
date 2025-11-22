@@ -12,7 +12,7 @@ in
   homelab = {
     enable = true;
     baseDomain = "cloud.brick-layer";
-    cloudflare.dnsCredentialsFile = "/persist/secrets/cloudflareDnsApiCredentials";
+    cloudflare.dnsCredentialsFile = config.age.secrets.cloudflareDnsApiCredentials.path;
     timeZone = "Europe/Berlin";
     mounts = {
       config = "/persist/opt/services";
@@ -22,7 +22,7 @@ in
     };
     samba = {
       enable = false;  # Disabled for initial install
-      passwordFile = "/persist/secrets/sambaPassword";
+      passwordFile = config.age.secrets.sambaPassword.path;
       shares = {
         Backups = {
           path = "${hl.mounts.merged}/Backups";
@@ -58,11 +58,11 @@ nextcloud = {
   url="cloud.brick-layer.org";
   admin = {
     username = "Felix";
-    passwordFile = "/persist/secrets/nextcloudAdminPassword";
+    passwordFile = config.age.secrets.nextcloudAdminPassword.path;
   };
   cloudflared = {
     tunnelId = "5f3b09f7-46a9-45be-8d15-5cc150776ba2";
-    credentialsFile = "/persist/secrets/nextcloudCloudflared";
+    credentialsFile = config.age.secrets.nextcloudCloudflared.path;
   };
 };
 
