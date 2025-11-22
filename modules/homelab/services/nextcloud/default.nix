@@ -109,12 +109,12 @@ in
       settings = {
         trusted_domains = [ cfg.url ];
         trusted_proxies = [ "127.0.0.1" ];
-        overwriteprotocol = "https";
         "overwrite.cli.url" = "https://${cfg.url}";
-        default_phone_region = "DE";
       };
 
       config = {
+        overwriteProtocol = "https";
+        defaultPhoneRegion = "DE";
         dbtype = "pgsql";
         adminuser = cfg.admin.username;
         adminpassFile = cfg.admin.passwordFile;
