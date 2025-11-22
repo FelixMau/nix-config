@@ -11,7 +11,7 @@ in
 {
   homelab = {
     enable = true;
-    baseDomain = "goose.party";
+    baseDomain = "cloud.brick-layer";
     cloudflare.dnsCredentialsFile = "/persist/secrets/cloudflareDnsApiCredentials";
     timeZone = "Europe/Berlin";
     mounts = {
