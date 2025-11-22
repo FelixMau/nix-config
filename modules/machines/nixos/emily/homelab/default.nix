@@ -55,7 +55,8 @@ in
       jellyseerr.enable = false;
 nextcloud = {
   enable = true;
-  url = "cloud.brick-layer.org";
+  url="cloud.brick-layer.org";
+  deed382 (Change domain trust)
   admin = {
     username = "Felix";
     passwordFile = "/persist/secrets/nextcloudAdminPassword";
