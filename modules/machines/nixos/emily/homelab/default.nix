@@ -11,7 +11,7 @@ in
 {
   homelab = {
     enable = true;
-    baseDomain = "goose.party";
+    baseDomain = "cloud.brick-layer";
     cloudflare.dnsCredentialsFile = "/persist/secrets/cloudflareDnsApiCredentials";
     timeZone = "Europe/Berlin";
     mounts = {
@@ -55,12 +55,13 @@ in
       jellyseerr.enable = false;
 nextcloud = {
   enable = true;
+  url="cloud.brick-layer.org";
   admin = {
     username = "Felix";
     passwordFile = "/persist/secrets/nextcloudAdminPassword";
   };
   cloudflared = {
-    tunnelId = "6fa5345a-8a6c-438f-9945-0e56b878d9cd";
+    tunnelId = "5f3b09f7-46a9-45be-8d15-5cc150776ba2";
     credentialsFile = "/persist/secrets/nextcloudCloudflared";
   };
 };

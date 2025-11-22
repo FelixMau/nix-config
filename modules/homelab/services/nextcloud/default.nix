@@ -70,12 +70,15 @@ in
     };
   };
   config = lib.mkIf cfg.enable {
-    services.nginx.virtualHosts."nix-nextcloud".listen = [
-      {
-        addr = "127.0.0.1";
-        port = 8009;
-      }
-    ];
+    services.nginx.virtualHosts."nix-nextcloud" = {
+      serverAliases = [ cfg.url ];
+      listen = [
+        {
+          addr = "127.0.0.1";
+          port = 8009;
+        }
+      ];
+    };
     services.cloudflared = {
       enable = true;
       tunnels.${cfg.cloudflared.tunnelId} = {
@@ -104,6 +107,12 @@ in
           tasks
           ;
 
+      };
+
+      settings = {
+        trusted_domains = [ cfg.url ];
+        trusted_proxies = [ "127.0.0.1" ];
+        "overwrite.cli.url" = "https://${cfg.url}";
       };
 
       config = {
