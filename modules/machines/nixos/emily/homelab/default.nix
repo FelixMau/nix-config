@@ -55,6 +55,7 @@ in
       jellyseerr.enable = false;
 nextcloud = {
   enable = true;
+  url = "cloud.brick-layer.org";
   admin = {
     username = "Felix";
     passwordFile = "/persist/secrets/nextcloudAdminPassword";
