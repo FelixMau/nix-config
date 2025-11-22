@@ -60,7 +60,7 @@ nextcloud = {
     passwordFile = "/persist/secrets/nextcloudAdminPassword";
   };
   cloudflared = {
-    tunnelId = "6fa5345a-8a6c-438f-9945-0e56b878d9cd";
+    tunnelId = "5f3b09f7-46a9-45be-8d15-5cc150776ba2";
     credentialsFile = "/persist/secrets/nextcloudCloudflared";
   };
 };
