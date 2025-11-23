@@ -66,7 +66,13 @@ nextcloud = {
   };
 };
 
-      vaultwarden.enable = false;
+      vaultwarden = {
+        enable = true;
+        cloudflared = {
+          tunnelId = "5f3b09f7-46a9-45be-8d15-5cc150776ba2";
+          credentialsFile = config.age.secrets.nextcloudCloudflared.path;
+        };
+      };
       microbin.enable = false;
       miniflux.enable = false;
       navidrome.enable = false;
