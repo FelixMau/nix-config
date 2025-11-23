@@ -94,7 +94,7 @@
     toAddress = "server_announcements@mailbox.org";
     smtpServer = "email-smtp.eu-west-1.amazonaws.com";
     smtpUsername = "AKIAYYXVLL34J7LSXFZF";
-    smtpPasswordPath = "/persist/secrets/smtpPassword";
+    smtpPasswordPath = config.age.secrets.smtpPassword.path;
   };
 
   security = {

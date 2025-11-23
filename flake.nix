@@ -53,6 +53,14 @@
       url = "github:Tenzer/alga?shallow=true";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-private = {
+      url = "git+ssh://git@github.com/FelixMau/nix-private";
+      flake = false;
+    };
   };
 
   outputs =

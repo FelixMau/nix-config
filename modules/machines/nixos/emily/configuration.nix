@@ -124,11 +124,11 @@ in
 
   tg-notify = {
     enable = true;
-    credentialsFile = "/persist/secrets/tgNotifyCredentials";
+    credentialsFile = config.age.secrets.tgNotifyCredentials.path;
   };
 
   services.adiosBot = {
-    enable = true;
-    botTokenFile = "/persist/secrets/adiosBotToken";
+    enable = false;
+    botTokenFile = config.age.secrets.adiosBotToken.path;
   };
 }

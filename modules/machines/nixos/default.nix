@@ -51,6 +51,7 @@ in
               ../../misc/withings2intervals
               self.inputs.adios-bot.nixosModules.default
               self.inputs.autoaspm.nixosModules.default
+              ../../misc/agenix
               self.inputs."home-manager${
                 lib.attrsets.attrByPath [ name ] "" nixpkgsMap
               }".nixosModules.home-manager
