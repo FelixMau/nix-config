@@ -9,50 +9,51 @@
 
   # Define secrets - they decrypt to /run/agenix/<name>
   age.secrets = {
+  # Secrets are stored in private repo: github:FelixMau/nix-private
     cloudflareDnsApiCredentials = {
-      file = ../../../secrets/cloudflareDnsApiCredentials.age;
+      file = "${inputs.nix-private}/cloudflareDnsApiCredentials.age";
       owner = "root";
       group = "root";
       mode = "0400";
     };
     nextcloudAdminPassword = {
-      file = ../../../secrets/nextcloudAdminPassword.age;
+      file = "${inputs.nix-private}/nextcloudAdminPassword.age";
       owner = "nextcloud";
       group = "nextcloud";
       mode = "0400";
     };
     nextcloudCloudflared = {
-      file = ../../../secrets/nextcloudCloudflared.age;
-      owner = "cloudflared";
-      group = "cloudflared";
+      file = "${inputs.nix-private}/nextcloudCloudflared.age";
+      owner = "root";
+      group = "root";
       mode = "0400";
     };
     sambaPassword = {
-      file = ../../../secrets/sambaPassword.age;
+      file = "${inputs.nix-private}/sambaPassword.age";
       owner = "root";
       group = "root";
       mode = "0400";
     };
     smtpPassword = {
-      file = ../../../secrets/smtpPassword.age;
+      file = "${inputs.nix-private}/smtpPassword.age";
       owner = "root";
       group = "root";
       mode = "0400";
     };
     tailscaleAuthKey = {
-      file = ../../../secrets/tailscaleAuthKey.age;
+      file = "${inputs.nix-private}/tailscaleAuthKey.age";
       owner = "root";
       group = "root";
       mode = "0400";
     };
     tgNotifyCredentials = {
-      file = ../../../secrets/tgNotifyCredentials.age;
+      file = "${inputs.nix-private}/tgNotifyCredentials.age";
       owner = "root";
       group = "root";
       mode = "0400";
     };
     adiosBotToken = {
-      file = ../../../secrets/adiosBotToken.age;
+      file = "${inputs.nix-private}/adiosBotToken.age";
       owner = "root";
       group = "root";
       mode = "0400";

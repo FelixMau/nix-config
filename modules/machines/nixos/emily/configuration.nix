@@ -128,7 +128,7 @@ in
   };
 
   services.adiosBot = {
-    enable = true;
+    enable = false;
     botTokenFile = config.age.secrets.adiosBotToken.path;
   };
 }

@@ -11,7 +11,7 @@ in
 {
   homelab = {
     enable = true;
-    baseDomain = "cloud.brick-layer";
+    baseDomain = "brick-layer.org";
     cloudflare.dnsCredentialsFile = config.age.secrets.cloudflareDnsApiCredentials.path;
     timeZone = "Europe/Berlin";
     mounts = {
