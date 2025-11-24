@@ -77,6 +77,14 @@ nextcloud = {
       miniflux.enable = false;
       navidrome.enable = false;
       audiobookshelf.enable = false;
+      landing-page = {
+        cloudflared = {
+          tunnelId = "5f3b09f7-46a9-45be-8d15-5cc150776ba2";
+          credentialsFile = config.age.secrets.nextcloudCloudflared.path;
+        };
+        enable = true;
+        passwordHash = "$2a$14$Kd84dW8TkTzkSZ0ORThb5.9JMkaWpb..l0S07lEAz/FOiN09qmhxi";
+      };
       deluge.enable = false;
     };
   };

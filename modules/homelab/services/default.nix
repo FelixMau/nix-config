@@ -99,5 +99,6 @@
     ./uptime-kuma
     ./vaultwarden
     ./wireguard-netns
+    ./landing-page
   ];
 }
