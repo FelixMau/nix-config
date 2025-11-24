@@ -100,5 +100,6 @@
     ./vaultwarden
     ./wireguard-netns
     ./landing-page
+    ./offshore-lcoe
   ];
 }

@@ -85,6 +85,13 @@ nextcloud = {
         enable = true;
         passwordHash = "$2a$14$Kd84dW8TkTzkSZ0ORThb5.9JMkaWpb..l0S07lEAz/FOiN09qmhxi";
       };
+      offshore-lcoe = {
+        enable = true;
+        cloudflared = {
+          tunnelId = "5f3b09f7-46a9-45be-8d15-5cc150776ba2";
+          credentialsFile = config.age.secrets.nextcloudCloudflared.path;
+        };
+      };
       deluge.enable = false;
     };
   };
