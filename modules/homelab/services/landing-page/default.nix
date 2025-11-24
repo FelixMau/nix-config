@@ -9,14 +9,25 @@ let
   cfg = config.homelab.services.${service};
   homelab = config.homelab;
 
-  # Public landing page (no email/phone)
-  landingPageHtml = pkgs.writeTextDir "index.html" ''
+  # Logo file
+  logoFile = ./logo.png;
+
+  # Public landing page with logo
+  landingPageSite = pkgs.runCommand "landing-page" {} ''
+    mkdir -p $out
+
+    # Copy logo
+    cp ${logoFile} $out/logo.png
+
+    # Create index.html
+    cat > $out/index.html << 'EOF'
     <!DOCTYPE html>
     <html lang="de">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${cfg.name} - ${cfg.title}</title>
+      <link rel="icon" type="image/png" href="/logo.png">
       <style>
         * {
           margin: 0;
@@ -35,6 +46,29 @@ let
           padding: 4rem 2rem;
           text-align: center;
           color: white;
+          position: relative;
+        }
+        .hero-content {
+          max-width: 800px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 2rem;
+          flex-wrap: wrap;
+        }
+        .logo {
+          width: 120px;
+          height: 120px;
+          animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .hero-text {
+          flex: 1;
+          min-width: 300px;
         }
         .hero h1 {
           font-size: 3rem;
@@ -49,8 +83,7 @@ let
         .hero .tagline {
           font-size: 1.1rem;
           opacity: 0.85;
-          max-width: 600px;
-          margin: 0 auto 1.5rem;
+          margin-bottom: 1.5rem;
         }
         .profile-links {
           display: flex;
@@ -250,12 +283,22 @@ let
           color: #888;
           font-size: 0.85rem;
         }
+        .footer-logo {
+          width: 60px;
+          height: 60px;
+          opacity: 0.3;
+          margin: 1rem auto 0;
+        }
         @media (max-width: 768px) {
           .hero h1 {
             font-size: 2rem;
           }
           .hero {
             padding: 3rem 1.5rem;
+          }
+          .logo {
+            width: 80px;
+            height: 80px;
           }
           .container {
             padding: 2rem 1rem;
@@ -268,13 +311,18 @@ let
     </head>
     <body>
       <header class="hero">
-        <h1>${cfg.name}</h1>
-        <div class="title">${cfg.title}</div>
-        <p class="tagline">${cfg.tagline}</p>
-        <div class="profile-links">
-          ${lib.optionalString (cfg.github != "") ''<a href="https://github.com/${cfg.github}">GitHub</a>''}
-          ${lib.optionalString (cfg.linkedin != "") ''<a href="https://linkedin.com/in/${cfg.linkedin}">LinkedIn</a>''}
-          ${lib.optionalString (cfg.xing != "") ''<a href="https://xing.com/profile/${cfg.xing}">Xing</a>''}
+        <div class="hero-content">
+          <img src="/logo.png" alt="Logo" class="logo">
+          <div class="hero-text">
+            <h1>${cfg.name}</h1>
+            <div class="title">${cfg.title}</div>
+            <p class="tagline">${cfg.tagline}</p>
+            <div class="profile-links">
+              ${lib.optionalString (cfg.github != "") ''<a href="https://github.com/${cfg.github}">GitHub</a>''}
+              ${lib.optionalString (cfg.linkedin != "") ''<a href="https://linkedin.com/in/${cfg.linkedin}">LinkedIn</a>''}
+              ${lib.optionalString (cfg.xing != "") ''<a href="https://xing.com/profile/${cfg.xing}">Xing</a>''}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -352,19 +400,25 @@ let
 
       <footer class="footer">
         <p>Diese Website wird auf meiner eigenen Infrastruktur mit NixOS gehostet.</p>
+        <img src="/logo.png" alt="Logo" class="footer-logo">
       </footer>
     </body>
     </html>
+EOF
   '';
 
-  # Protected area with contact info and documents
-  protectedHtml = pkgs.writeTextDir "index.html" ''
+  # Protected area with contact info
+  protectedSite = pkgs.runCommand "bewerbung" {} ''
+    mkdir -p $out
+
+    cat > $out/index.html << 'EOF'
     <!DOCTYPE html>
     <html lang="de">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Bewerbungsunterlagen - ${cfg.name}</title>
+      <link rel="icon" type="image/png" href="/logo.png">
       <style>
         * {
           margin: 0;
@@ -447,14 +501,6 @@ let
         .doc-list li:last-child {
           margin-bottom: 0;
         }
-        .doc-list a {
-          color: #667eea;
-          text-decoration: none;
-          font-weight: 500;
-        }
-        .doc-list a:hover {
-          text-decoration: underline;
-        }
         .doc-list .desc {
           color: #888;
           font-size: 0.85rem;
@@ -529,6 +575,7 @@ let
       </div>
     </body>
     </html>
+EOF
   '';
 in
 {
@@ -583,8 +630,7 @@ in
     };
     passwordHash = lib.mkOption {
       type = lib.types.str;
-      description = "Bcrypt hash for protected area. Generate with: caddy hash-password";
-      example = "$2a$14$...";
+      description = "Bcrypt hash for protected area";
     };
     cloudflared.credentialsFile = lib.mkOption {
       type = lib.types.str;
@@ -697,13 +743,13 @@ in
           basic_auth {
             felix ${cfg.passwordHash}
           }
-          root * ${protectedHtml}
+          root * ${protectedSite}
           uri strip_prefix /bewerbung
           file_server
         }
 
         handle {
-          root * ${landingPageHtml}
+          root * ${landingPageSite}
           file_server
         }
       '';
