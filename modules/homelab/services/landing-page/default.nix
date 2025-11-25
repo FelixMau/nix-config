@@ -797,23 +797,38 @@ in
 
     services.caddy.virtualHosts.":8080" = {
       extraConfig = ''
-        # Exact match for PHP files in /bewerbung/
-        handle_path /bewerbung/*.php {
-          root * /var/www/bewerbung
-          php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
-        }
+        # All /bewerbung requests
+        handle /bewerbung* {
+          # Admin page
+          @admin path /bewerbung/admin.php
+          handle @admin {
+            rewrite * /admin.php
+            root * /var/www/bewerbung
+            php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
+          }
 
-        # Documents directory (files, no PHP processing)
-        handle_path /bewerbung/documents/* {
-          root * /var/www/bewerbung
-          file_server
-        }
+          # Logout page  
+          @logout path /bewerbung/logout.php
+          handle @logout {
+            rewrite * /logout.php
+            root * /var/www/bewerbung
+            php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
+          }
+          # Documents directory
+          @documents path /bewerbung/documents/* /bewerbung/documents
+          handle @documents {
+            uri strip_prefix /bewerbung
+            root * /var/www/bewerbung
+            file_server browse
+          }
 
-        # Everything else under /bewerbung/ -> index.php
-        handle_path /bewerbung* {
-          root * /var/www/bewerbung
-          try_files {path} /index.php
-          php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
+          # Default: strip prefix and route everything else to index.php
+          handle {
+            uri strip_prefix /bewerbung
+            root * /var/www/bewerbung
+            rewrite * /index.php
+            php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
+          }
         }
 
         # Landing page
