@@ -58,5 +58,11 @@
       group = "root";
       mode = "0400";
     };
+    landingPageHtpasswd = {
+      file = "${inputs.nix-private}/landingPageHtpasswd.age";
+      owner = "caddy";
+      group = "caddy";
+      mode = "0400";
+    };
   };
 }

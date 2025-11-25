@@ -300,11 +300,11 @@
     "nix-private": {
       "flake": false,
       "locked": {
-        "lastModified": 1763903380,
-        "narHash": "sha256-iLx4031L+x7gjPEdWylPG4mAxEKV962cHTmKD6OUrcM=",
+        "lastModified": 1764079442,
+        "narHash": "sha256-GGBi6kE8UBsrsYvQC1V+OHWBwg6O4iIqjgUEDZHhsb8=",
         "ref": "refs/heads/main",
-        "rev": "d33209a11594496e2224bfed11becebeff7c0ed7",
-        "revCount": 12,
+        "rev": "44f48233d5729d08a152f4c972c6b01c02ac8ec2",
+        "revCount": 14,
         "type": "git",
         "url": "ssh://git@github.com/FelixMau/nix-private"
       },

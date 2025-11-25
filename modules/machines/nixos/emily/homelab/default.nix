@@ -83,7 +83,6 @@ nextcloud = {
           credentialsFile = config.age.secrets.nextcloudCloudflared.path;
         };
         enable = true;
-        passwordHash = "$2a$14$Kd84dW8TkTzkSZ0ORThb5.9JMkaWpb..l0S07lEAz/FOiN09qmhxi";
         projects = [
           {
             name = "Offshore Wind LCOE Calculator";

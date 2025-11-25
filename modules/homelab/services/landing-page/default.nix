@@ -657,10 +657,6 @@ in
       type = lib.types.str;
       default = "";
     };
-    passwordHash = lib.mkOption {
-      type = lib.types.str;
-      description = "Bcrypt hash for protected area";
-    };
     cloudflared.credentialsFile = lib.mkOption {
       type = lib.types.str;
       description = "Path to cloudflared credentials file";
@@ -774,7 +770,7 @@ in
       extraConfig = ''
         handle /bewerbung/* {
           basic_auth {
-            felix ${cfg.passwordHash}
+            import ${config.age.secrets.landingPageHtpasswd.path}
           }
           root * ${protectedSite}
           uri strip_prefix /bewerbung
