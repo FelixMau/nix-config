@@ -98,7 +98,7 @@ nextcloud = {
           {
             name = "IoT & Automatisierung";
             description = "Automatisierung und Digitalisierung verschiedener Systeme mit Mikrocontrollern, z.B. IoT-Anbindung einer Kaffeemaschine.";
-            url = "#";
+            url = "https://github.com/FelixMau/smart_espresso_machine";
           }
         ];
       };
