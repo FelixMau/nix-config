@@ -194,6 +194,34 @@ let
           font-size: 0.85rem;
           line-height: 1.6;
         }
+        .project-card {
+          text-decoration: none;
+          color: inherit;
+          display: block;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .project-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .project-disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+        .project-disabled:hover {
+          transform: none;
+          box-shadow: none;
+        }
+        .coming-soon {
+          display: inline-block;
+          background: #ffc107;
+          color: #333;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          margin-top: 0.5rem;
+        }
         .documents-section {
           background: #f8f9fa;
           border-radius: 8px;
@@ -355,10 +383,11 @@ let
           <h2>Projekte</h2>
           <div class="projects-grid">
             ${lib.concatMapStringsSep "\n            " (proj: ''
-            <div class="project-card">
+            <a href="${proj.url}" class="project-card ${if proj.url == "#" then "project-disabled" else ""}">
               <h3>${proj.name}</h3>
               <p>${proj.description}</p>
-            </div>
+            ${if proj.url == "#" then "<span class='coming-soon'>Coming Soon</span>" else ""}
+            </a>
             '') cfg.projects}
           </div>
         </section>
@@ -699,6 +728,10 @@ in
       type = lib.types.listOf (lib.types.submodule {
         options = {
           name = lib.mkOption { type = lib.types.str; };
+          url = lib.mkOption {
+            type = lib.types.str;
+            default = "#";
+          };
           description = lib.mkOption { type = lib.types.str; };
         };
       });

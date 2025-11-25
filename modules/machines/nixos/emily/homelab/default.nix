@@ -84,6 +84,23 @@ nextcloud = {
         };
         enable = true;
         passwordHash = "$2a$14$Kd84dW8TkTzkSZ0ORThb5.9JMkaWpb..l0S07lEAz/FOiN09qmhxi";
+        projects = [
+          {
+            name = "Offshore Wind LCOE Calculator";
+            description = "Interactive Streamlit app zur Berechnung der Stromgestehungskosten (LCOE) und Energieernte von Offshore-Windkraftanlagen in Deutschland";
+            url = "https://lcoe.brick-layer.org";
+          }
+          {
+            name = "Home Server & Cloud Infrastructure";
+            description = "Systemadministration mit NixOS, Docker-Container und Infrastructure as Code für verschiedene Self-Hosted Services.";
+            url = "https://github.com/FelixMau/nix-config";
+          }
+          {
+            name = "IoT & Automatisierung";
+            description = "Automatisierung und Digitalisierung verschiedener Systeme mit Mikrocontrollern, z.B. IoT-Anbindung einer Kaffeemaschine.";
+            url = "#";
+          }
+        ];
       };
       offshore-lcoe = {
         enable = true;
