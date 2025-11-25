@@ -545,6 +545,33 @@ EOF
           text-decoration: underline;
         }
         .note {
+        .admin-button {
+          display: inline-block;
+          background: #28a745;
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 500;
+          margin-top: 1rem;
+          transition: background 0.2s;
+        }
+        .admin-button:hover {
+          background: #218838;
+        }
+        .download-link {
+          display: inline-block;
+          background: #667eea;
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          text-decoration: none;
+          font-size: 0.9rem;
+          margin-top: 0.5rem;
+        }
+        .download-link:hover {
+          background: #5568d3;
+        }
           background: #fff3cd;
           border: 1px solid #ffc107;
           border-radius: 8px;
@@ -553,6 +580,7 @@ EOF
           color: #856404;
         }
       </style>
+          <a href="/bewerbung/admin.php" class="admin-button">📁 Dokumente verwalten (Admin)</a>
     </head>
     <body>
       <div class="container">
@@ -582,23 +610,8 @@ EOF
         </section>
 
         <section class="section">
-          <h2>Dokumente</h2>
-          <div class="note" style="margin-bottom: 1rem;">
-            Die Dokumente werden hier in Kürze zum Download bereitgestellt.
-          </div>
-          <ul class="doc-list">
-            <li>
-              <strong>Lebenslauf</strong>
-              <div class="desc">Aktueller Lebenslauf als PDF</div>
-            </li>
-            <li>
-              <strong>Zeugnisse</strong>
-              <div class="desc">Hochschulzeugnisse und Arbeitszeugnisse</div>
-            </li>
-            <li>
-              <strong>Zertifikate</strong>
-              <div class="desc">Weiterbildungen und Qualifikationen</div>
-            </li>
+          <p style="margin-bottom: 1rem;">Alle hochgeladenen Dokumente sind im Dokumentenbereich verfügbar.</p>
+          <a href="/bewerbung/documents/" class="download-link">📄 Zum Dokumentenbereich</a>
           </ul>
         </section>
       </div>
@@ -764,10 +777,43 @@ in
       ];
     };
   };
-
   config = lib.mkIf cfg.enable {
+    # Enable PHP-FPM for document management
+    services.phpfpm.pools.bewerbung = {
+      user = "caddy";
+      group = "caddy";
+      settings = {
+        "listen.owner" = "caddy";
+        "listen.group" = "caddy";
+        "pm" = "dynamic";
+        "pm.max_children" = 5;
+        "pm.start_servers" = 2;
+        "pm.min_spare_servers" = 1;
+        "pm.max_spare_servers" = 3;
+        "php_admin_value[upload_max_filesize]" = "10M";
+        "php_admin_value[post_max_size]" = "10M";
+      };
+    };
+
     services.caddy.virtualHosts.":8080" = {
       extraConfig = ''
+        handle /bewerbung/admin.php* {
+          basic_auth {
+            # Only felix can access admin page
+            felix $2y$05$BBFogg5Q5XBuDpJfg4Jwc.9fJ9N18r8RD2TTA7yf5PCkjLGPGot0.
+          }
+          root * /var/www/bewerbung
+          php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
+        }
+
+        handle /bewerbung/documents/* {
+          basic_auth {
+            import ${config.age.secrets.landingPageHtpasswd.path}
+          }
+          root * /var/www/bewerbung
+          file_server
+        }
+
         handle /bewerbung/* {
           basic_auth {
             import ${config.age.secrets.landingPageHtpasswd.path}
