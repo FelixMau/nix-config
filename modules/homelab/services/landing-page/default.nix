@@ -797,19 +797,19 @@ in
 
     services.caddy.virtualHosts.":8080" = {
       extraConfig = ''
-        handle /bewerbung/documents/* {
-          root * /var/www/bewerbung
-          file_server
-        }
-
         handle /bewerbung/*.php {
           root * /var/www/bewerbung
           php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
         }
 
-        handle /bewerbung/* {
+        handle /bewerbung/documents/* {
           root * /var/www/bewerbung
-          rewrite * /index.php
+          file_server
+        }
+
+        handle_path /bewerbung* {
+          root * /var/www/bewerbung
+          try_files {path} /index.php
           php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
         }
 
