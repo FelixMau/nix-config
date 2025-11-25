@@ -797,30 +797,20 @@ in
 
     services.caddy.virtualHosts.":8080" = {
       extraConfig = ''
-        handle /bewerbung/admin.php* {
-          basic_auth {
-            # Only felix can access admin page
-            felix $2y$05$BBFogg5Q5XBuDpJfg4Jwc.9fJ9N18r8RD2TTA7yf5PCkjLGPGot0.
-          }
+        handle /bewerbung/documents/* {
+          root * /var/www/bewerbung
+          file_server
+        }
+
+        handle /bewerbung/*.php {
           root * /var/www/bewerbung
           php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
         }
 
-        handle /bewerbung/documents/* {
-          basic_auth {
-            import ${config.age.secrets.landingPageHtpasswd.path}
-          }
-          root * /var/www/bewerbung
-          file_server
-        }
-
         handle /bewerbung/* {
-          basic_auth {
-            import ${config.age.secrets.landingPageHtpasswd.path}
-          }
-          root * ${protectedSite}
-          uri strip_prefix /bewerbung
-          file_server
+          root * /var/www/bewerbung
+          rewrite * /index.php
+          php_fastcgi unix/${config.services.phpfpm.pools.bewerbung.socket}
         }
 
         handle {
