@@ -1,0 +1,147 @@
+URGENT: D-Bus and Core Services Failing - System Boot Issue
+
+SITUATION:
+System boots but critical services are failing, resulting in black screen.
+Screenshots show repeated D-Bus failures, nscd failures, and name resolution problems.
+
+CRITICAL FAILURES OBSERVED:
+[FAILED] D-Bus System Message Bus - failing repeatedly
+[FAILED] nscd.service - Name Service Cache Daemon
+[FAILED] Host and Network Name Lookups
+[FAILED] User and Group Name Lookups
+[FAILED] resolvconf update
+[WARN] Intel ISH: hw start failed
+
+ROOT CAUSE:
+D-Bus is failing, which blocks almost all desktop/graphical services.
+Without D-Bus, login managers, display managers, and most services cannot function.
+
+YOUR IMMEDIATE TASKS:
+
+1. ENTER RECOVERY MODE
+   ```bash
+   # If not already done:
+   zpool import -f bpool && zpool import -f rpool
+   mount -t zfs rpool/nixos/empty /mnt/nixos
+   # ... mount all other datasets ...
+   nixos-enter --root /mnt/nixos
+   ```
+
+2. DIAGNOSE D-BUS FAILURE (MOST CRITICAL)
+   ```bash
+   journalctl -u dbus.service -b -1 | tail -200
+   systemctl status dbus.service --full --no-pager
+
+   # Check critical paths
+   ls -la /run/dbus/ || echo "MISSING: /run/dbus"
+   ls -la /var/lib/dbus/ || echo "MISSING: /var/lib/dbus"
+   cat /etc/machine-id || echo "MISSING: machine-id"
+
+   # Check messagebus user
+   id messagebus || echo "MISSING: messagebus user"
+   getent passwd messagebus || echo "MISSING: messagebus in passwd"
+   ```
+
+3. VERIFY MOUNT ORDERING
+   ```bash
+   # D-Bus needs /var/lib mounted BEFORE it starts
+   mount | grep "/var/lib"
+   systemctl show dbus.service | grep -E "After|Requires"
+
+   # Check if mount happened too late
+   journalctl -b -1 | grep -E "var-lib.mount|dbus" | head -50
+   ```
+
+4. CHECK IMMUTABLE ROOT ISSUES
+   ```bash
+   # Immutable root (rollback) might be clearing needed state
+   journalctl -b -1 | grep rollback
+
+   # Check if /run is tmpfs and properly set up
+   mount | grep "/run"
+   ls -la /run/
+   ```
+
+5. MOST LIKELY FIXES (Try in order):
+
+   **FIX A: Mount Ordering Issue**
+   If /var/lib not mounted before D-Bus starts:
+   ```bash
+   # Edit /etc/nixos/modules/machines/nixos/emily/configuration.nix
+   # Add:
+   systemd.services.dbus = {
+     after = [ "var-lib.mount" "local-fs.target" ];
+     requires = [ "var-lib.mount" ];
+   };
+   ```
+
+   **FIX B: Machine ID Missing**
+   ```bash
+   # If /etc/machine-id missing or invalid
+   systemd-machine-id-setup
+   dbus-uuidgen --ensure=/var/lib/dbus/machine-id
+   ```
+
+   **FIX C: messagebus User Missing**
+   ```bash
+   # If messagebus user doesn't exist
+   groupadd -r messagebus 2>/dev/null || true
+   useradd -r -d /run/dbus -s /sbin/nologin -g messagebus messagebus 2>/dev/null || true
+   ```
+
+   **FIX D: /run Not Properly Set Up**
+   ```bash
+   # /run must be tmpfs with correct permissions
+   # This should be automatic, but if broken:
+   # Check in configuration if there's anything overriding /run
+   mount | grep /run
+   ```
+
+6. ROLLBACK FIRST (SAFEST)
+   Since your working system from SSD should have had D-Bus working:
+   ```bash
+   nix-env --list-generations --profile /nix/var/nix/profiles/system
+
+   # Find the generation BEFORE the hardware changes
+   nix-env --rollback --profile /nix/var/nix/profiles/system
+   # OR to specific generation:
+   # nix-env --switch-generation <NUMBER> --profile /nix/var/nix/profiles/system
+
+   /nix/var/nix/profiles/system/bin/switch-to-configuration boot
+   ```
+   This should get back to working state from before hardware changes.
+
+7. AFTER ROLLBACK/FIX
+   ```bash
+   # Test the fix
+   systemctl daemon-reload
+   systemctl start dbus.service
+   systemctl status dbus.service
+
+   # If D-Bus starts successfully:
+   nixos-rebuild boot
+   exit
+   reboot
+   ```
+
+THEORY ON WHAT HAPPENED:
+The hardware changes (kernel modules, network) might have changed boot timing,
+causing /var/lib ZFS dataset to mount AFTER D-Bus tries to start. Without
+/var/lib/dbus mounted, D-Bus cannot initialize, cascading to all other failures.
+
+Alternatively, the immutable root rollback might be happening at wrong time,
+clearing /run before services initialize.
+
+PRIORITY:
+1. FIRST: Try rollback to working generation (fastest, safest)
+2. IF rollback unavailable: Diagnose D-Bus failure cause
+3. Apply specific fix for root cause
+4. Verify D-Bus starts before full rebuild
+
+OUTPUT NEEDED:
+1. Contents of: journalctl -u dbus.service -b -1 | tail -100
+2. Status of /var/lib mount timing
+3. Whether rollback fixed it or what specific fix was needed
+4. Confirmation system boots to working state
+
+The network interface changes are NOT the primary problem - D-Bus must work first.
