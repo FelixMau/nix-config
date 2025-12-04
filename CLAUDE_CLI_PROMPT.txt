@@ -1,0 +1,103 @@
+URGENT: Black Screen Boot Issue - System Recovery Needed
+
+My NixOS system boots to a black screen after applying hardware configuration changes. I need systematic debugging and recovery.
+
+CONTEXT:
+- System: NixOS with ZFS root (immutable) on Samsung 860 EVO
+- Hardware: Supermicro X11SSL-F, Intel Xeon E3-1230 v6, ASPEED IPMI graphics
+- Status: Currently in NixOS installer/recovery environment
+
+CHANGES APPLIED BEFORE BLACK SCREEN:
+1. Network interface: enp1s0 → enp2s0 (modules/machines/nixos/_common/default.nix:115)
+2. Kernel modules updated (modules/machines/nixos/emily/configuration.nix:76-82)
+   - Removed: uhci_hcd, ehci_pci, sr_mod
+   - Added: xhci_pci, usb_storage, usbhid
+
+SYSTEM MOUNT STATUS:
+- ZFS pools imported (bpool, rpool)
+- System mounted at /mnt/nixos with all datasets
+- Can access /mnt/nixos/etc/nixos configuration
+
+YOUR TASKS (IN ORDER):
+
+1. MOUNT VERIFICATION
+   - Verify all ZFS datasets are properly mounted
+   - Check /mnt/nixos/etc/nixos is accessible
+   - Confirm configuration files are intact
+
+2. BOOT LOG ANALYSIS
+   Execute:
+   ```
+   nixos-enter --root /mnt/nixos
+   journalctl -b -1 | tail -300
+   journalctl -b -1 | grep -i "fail\|error\|fatal"
+   systemctl list-jobs --no-pager --full
+   ```
+   Analyze what's failing or stuck
+
+3. IDENTIFY ROOT CAUSE
+   Check these in priority order:
+
+   a) Network configuration issue:
+      - Does enp2s0 actually exist? (ip link show)
+      - Is system stuck waiting for network?
+      - Check: systemctl status network-addresses-enp2s0
+
+   b) Display/console issue:
+      - Check dmesg for ASPEED/graphics errors
+      - Is getty running? (systemctl status getty@tty1)
+      - Console driver problems?
+
+   c) Kernel module problems:
+      - Did USB modules load correctly?
+      - Check: lsmod | grep -i usb
+      - Are keyboard/input devices working?
+
+   d) ZFS/boot issues:
+      - Did rpool import succeed?
+      - Did rollback work? (grep rollback in journal)
+
+4. DETERMINE RECOVERY ACTION
+   Based on findings, choose:
+
+   OPTION A (Safest): Rollback to previous generation
+   ```
+   nixos-enter --root /mnt/nixos
+   nix-env --list-generations --profile /nix/var/nix/profiles/system
+   nix-env --rollback --profile /nix/var/nix/profiles/system
+   /nix/var/nix/profiles/system/bin/switch-to-configuration boot
+   ```
+
+   OPTION B: Fix specific issue found:
+   - Revert network interface to enp1s0
+   - OR revert kernel modules
+   - OR add nomodeset kernel parameter
+   - OR enable useDHCP fallback
+   Then: nixos-rebuild boot --root /mnt/nixos
+
+   OPTION C: Emergency SSH-only boot
+   - Enable SSH with DHCP
+   - Boot to network-only
+   - Debug from SSH session
+
+5. EXECUTE RECOVERY
+   - Make necessary changes
+   - Verify with: nixos-rebuild dry-build --root /mnt/nixos
+   - Apply: nixos-rebuild boot --root /mnt/nixos
+   - Explain what was changed and why
+
+6. POST-RECOVERY RECOMMENDATIONS
+   - Suggest safe way to re-apply needed changes
+   - Recommend testing strategy (one change at a time)
+
+DELIVERABLES:
+1. Root cause analysis from logs
+2. Specific recovery action taken
+3. Explanation of what went wrong
+4. Safe path forward to apply hardware changes correctly
+
+CRITICAL: System needs to boot. Prioritize getting a working system first, then we can incrementally apply hardware-specific changes.
+
+Available reference: /mnt/nixos/etc/nixos/DEBUG_BLACKSCREEN.md contains detailed commands and checks.
+
+Start by entering the system and checking the boot logs to identify what failed.
