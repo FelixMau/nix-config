@@ -112,7 +112,7 @@
     local.lan = {
       id = 1;
       cidr.v4 = "192.168.2.1";
-      interface = "enp1s0";
+      interface = "enp2s0";  # Updated for Supermicro X11SSL-F hardware
       trusted = true;
       reservations = {
         emily = { Address = "192.168.2.199"; };

@@ -8,45 +8,40 @@ let
   hl = config.homelab;
 in
 {
-  nixpkgs.config.packageOverrides = pkgs: {
-    vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
-  };
+  # Server hardware - no integrated GPU
   hardware = {
     enableRedistributableFirmware = true;
     cpu.intel.updateMicrocode = true;
-    graphics = {
-      enable = true;
-      extraPackages = with pkgs; [
-        intel-media-driver
-        intel-vaapi-driver
-        vaapiVdpau
-        intel-compute-runtime
-        vpl-gpu-rt
-      ];
-    };
+    graphics.enable = false;  # Supermicro X11SSL-F has no integrated GPU
   };
   boot = {
     zfs.forceImportRoot = true;
     kernelParams = [
       "pcie_aspm=force"
       "consoleblank=60"
-      "acpi_enforce_resources=lax"
-      "nvme_core.default_ps_max_latency_us=50000"
+      # Removed nvme_core parameter - using SATA SSD, not NVMe
+      # Removed acpi_enforce_resources - may conflict with Supermicro BIOS
     ];
+    # Blacklist problematic Intel ISH modules causing boot delays
+    blacklistedKernelModules = [ "intel_ish_ipc" "intel_ishtp" ];
     kernelModules = [
       "coretemp"
       "jc42"
-      "lm78"
-      "f71882fg"
+      # Server hardware modules
+      "ahci"
+      "xhci_pci"
     ];
   };
 
   networking =
     let
-      mainIface = "enp1s0";
+      # FIXME: Verify actual interface name on new hardware with: ip link show
+      # Supermicro X11SSL-F typically has enp2s0 or enp3s0
+      mainIface = "enp2s0";  # Changed from enp1s0 for new hardware
     in
     {
-      useDHCP = false;
+      # Enable DHCP fallback in case static config fails
+      useDHCP = lib.mkDefault true;
       networkmanager.enable = false;
       hostName = "emily";
       interfaces.${mainIface} = {
@@ -130,5 +125,23 @@ in
   services.adiosBot = {
     enable = false;
     botTokenFile = config.age.secrets.adiosBotToken.path;
+  };
+
+  # CRITICAL FIX: Ensure D-Bus and nscd start AFTER /var/lib is mounted
+  # Without this, services fail because /var/lib/dbus is not available
+  systemd.services.dbus = {
+    after = [ "var-lib.mount" "local-fs.target" ];
+    requires = [ "var-lib.mount" ];
+  };
+
+  systemd.services.nscd = {
+    after = [ "var-lib.mount" "local-fs.target" ];
+    requires = [ "var-lib.mount" ];
+  };
+
+  # Ensure agenix can access SSH keys before services need secrets
+  systemd.services.agenix = lib.mkIf config.age.secrets != {} {
+    after = [ "persist.mount" "local-fs.target" ];
+    requires = [ "persist.mount" ];
   };
 }
