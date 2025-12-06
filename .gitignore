@@ -13,9 +13,6 @@ CLAUDE.md
 DEBUG_BLACKSCREEN.md
 DEBUG_DBUS_FAILURE.md
 .envrc
-flake.lock
-flake.nix
-.github
 .git
 .gitignore
 HARDWARE_MIGRATION_FIX.md
