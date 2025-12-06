@@ -14,16 +14,24 @@ in
     cpu.intel.updateMicrocode = true;
     graphics.enable = false;  # Supermicro X11SSL-F has no integrated GPU
   };
+
+  # Compressed RAM swap to prevent OOM during builds
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+  };
   boot = {
+    supportedFilesystems = [ "nfs" ];
     zfs.forceImportRoot = true;
     kernelParams = [
       "pcie_aspm=force"
       "consoleblank=60"
-      # Removed nvme_core parameter - using SATA SSD, not NVMe
-      # Removed acpi_enforce_resources - may conflict with Supermicro BIOS
+      # Disable graphics to prevent ASPEED AST2400 freeze (SSH-only server)
+      "nomodeset"
+      "video=astdrmfb:off"
     ];
-    # Blacklist problematic Intel ISH modules causing boot delays
-    blacklistedKernelModules = [ "intel_ish_ipc" "intel_ishtp" ];
+    # Blacklist problematic modules: Intel ISH (boot delays) + ASPEED ast (freeze)
+    blacklistedKernelModules = [ "intel_ish_ipc" "intel_ishtp" "ast" ];
     kernelModules = [
       "coretemp"
       "jc42"
@@ -35,9 +43,8 @@ in
 
   networking =
     let
-      # FIXME: Verify actual interface name on new hardware with: ip link show
-      # Supermicro X11SSL-F typically has enp2s0 or enp3s0
-      mainIface = "enp2s0";  # Changed from enp1s0 for new hardware
+      # Verified via `ip link show` on new Supermicro hardware - uses eno2 naming
+      mainIface = "eno2";
     in
     {
       # Enable DHCP fallback in case static config fails
@@ -79,7 +86,7 @@ in
       bootDevices = [
         "ata-Samsung_SSD_860_EVO_500GB_S3Z2NB0KC53819J"
       ];
-      immutable = true;
+      immutable = false;  # Disabled: initrd activation was running before /var/lib mount
       availableKernelModules = [
         "uhci_hcd"
         "ehci_pci"
@@ -115,6 +122,7 @@ in
     cpufrequtils
     intel-gpu-tools
     powertop
+    ipmitool
   ];
 
   tg-notify = {
@@ -140,8 +148,31 @@ in
   };
 
   # Ensure agenix can access SSH keys before services need secrets
-  systemd.services.agenix = lib.mkIf config.age.secrets != {} {
+  systemd.services.agenix = lib.mkIf (config.age.secrets != {}) {
     after = [ "persist.mount" "local-fs.target" ];
     requires = [ "persist.mount" ];
+  };
+  # IPMI fan control - set quiet fan speed on boot (Supermicro X11SSL-F)
+  systemd.services.ipmi-fan-control = {
+    description = "Set IPMI fan speed";
+    path = [ pkgs.kmod pkgs.ipmitool ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeShellScript "ipmi-fan-control" ''
+        modprobe ipmi_devintf
+        modprobe ipmi_si
+        sleep 5
+        ipmitool raw 0x30 0x70 0x66 0x01 0x00 0x24
+      '';
+    };
+  };
+
+  # Timer to run fan control 60 seconds after boot (BMC may reset settings)
+  systemd.timers.ipmi-fan-control = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "60s";
+      Unit = "ipmi-fan-control.service";
+    };
   };
 }

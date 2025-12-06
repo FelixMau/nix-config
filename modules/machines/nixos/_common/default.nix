@@ -64,7 +64,7 @@
       LoginGraceTime = 0;
       PermitRootLogin = "no";
     };
-    ports = [ 69 ];
+    ports = [ 69 22 ];
     hostKeys = [
       {
         path = "/persist/ssh/ssh_host_ed25519_key";
@@ -90,7 +90,7 @@
 
   email = {
     enable = true;
-    fromAddress = "moe@notthebe.ee";
+    fromAddress = "fmau@posteo.de";
     toAddress = "server_announcements@mailbox.org";
     smtpServer = "email-smtp.eu-west-1.amazonaws.com";
     smtpUsername = "AKIAYYXVLL34J7LSXFZF";
@@ -112,7 +112,7 @@
     local.lan = {
       id = 1;
       cidr.v4 = "192.168.2.1";
-      interface = "enp2s0";  # Updated for Supermicro X11SSL-F hardware
+      interface = "eno2";  # Updated for Supermicro X11SSL-F hardware
       trusted = true;
       reservations = {
         emily = { Address = "192.168.2.199"; };

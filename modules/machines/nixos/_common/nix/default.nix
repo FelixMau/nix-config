@@ -12,10 +12,15 @@
       dates = [ "daily" ];
     };
 
-    settings.experimental-features = lib.mkDefault [
-      "nix-command"
-      "flakes"
-    ];
+    settings = {
+      experimental-features = lib.mkDefault [
+        "nix-command"
+        "flakes"
+      ];
+      # Limit parallelism to prevent OOM on 8GB RAM
+      max-jobs = 2;
+      cores = 2;
+    };
   };
 
   nixpkgs = {
